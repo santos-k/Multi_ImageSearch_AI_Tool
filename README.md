@@ -16,8 +16,9 @@ AI tool to search multi image at the same time and also search with multiple web
   - pickle
 
 ## Features
-  1. Can be searched single/multiple images
-  2. Also can be search using uploading a csv file which have url of images
+  1. single/multiple images search
+  2. CSV file search which contains url of images
   3. Search from multiple databases
   4. Filters can be applied on results like Brand, Category, Matching threshold value
+  5. Matching can be download as csv file
  
