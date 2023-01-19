@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="C:\Users\withu\AppData\Roaming\JetBrains\PyCharmCE2021.3\scratches\test.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\assets\annotation\2b3cbde4-86e6-4453-aede-340b2ff5606f.csv">
           <value>
             <Attribute>
@@ -10,7 +17,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\assets\annotation\d24f9388-a73b-48e3-8b27-c14b6ddddff2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\assets\annotation\e0df7222-e963-41e4-9c62-47a632073d20.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\assets\annotation\ea305c16-25d8-4cab-ab9d-360d9fa06fa2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\assets\data.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

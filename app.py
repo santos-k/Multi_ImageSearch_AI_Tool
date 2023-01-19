@@ -29,13 +29,13 @@ bijnis_brand = pd.read_csv('assets/dropdown_df/dropdown_bijnis_brand.csv')['opti
 udaan_category = pd.read_csv('assets/dropdown_df/dropdown_udaan_category.csv')['options']
 udaan_brand = pd.read_csv('assets/dropdown_df/dropdown_udaan_brand.csv')['options']
 
-client_data = pd.read_csv("user_data.csv")
+client_data = pd.read_csv("store_user_data.csv")
 
 
-def search_data(index, search_id, api, helper, filename="assets/data.csv"):
+def search_data(index, search_id, api, helper, filename="assets/input_file/file_search/data.csv"):
     global client_data
     # print(search_id)
-    pd.DataFrame().to_csv(f"assets/annotation/{search_id}.csv")
+    pd.DataFrame().to_csv(f"assets/outputs/annotation/{search_id}.csv")
     # print("File saved")
     cat = ""
     brand = ""
@@ -82,7 +82,7 @@ def search_data(index, search_id, api, helper, filename="assets/data.csv"):
         dis_child.insert(0, html.Div(html.H4(message), className="text-center"))
         #         print("Search time: ", datetime.now()-searcht)
 
-        return dis_child, f"Search in process...Internal file location: \"assets/annotation/{search_id}.csv\"", True, show_np
+        return dis_child, f"Search in process...Internal file location: \"assets/outputs/annotation/{search_id}.csv\"", True, show_np
     else:
         return no_update, result, True, no_update
 
@@ -267,7 +267,7 @@ def search_type(stype):
                                       'total_page': 0,
                                       'search_item': 0,
                                       'search_type': 'File Search'}, ignore_index=True)
-    client_data.to_csv("user_data.csv", index=False)
+    client_data.to_csv("store_user_data.csv", index=False)
     index = client_data[client_data['id'] == user_id].index[0]
     if stype == "Image Search":
         client_data.loc[index, 'search_type'] = 'Image Search'
@@ -397,13 +397,13 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                 #         fp.write(base64.b64decode((image.split('base64,')[1])))
                 #         fp.close()
 
-                path = os.path.join("assets/image", fe_request_id)
+                path = os.path.join("assets/input_file/image_search", fe_request_id)
                 os.mkdir(path)
                 for image, name in zip(contents, filename):
-                    with open(os.path.join(f'assets/image/{fe_request_id}', f'{name}'), 'wb') as fp:
+                    with open(os.path.join(f'assets/input_file/image_search/{fe_request_id}', f'{name}'), 'wb') as fp:
                         fp.write(base64.b64decode((image.split('base64,')[1])))
                         fp.close()
-                return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
+                return search_data(index, fe_request_id, api, helper, filename="assets/input_file/file_search/data.csv")
             elif search_click > 0 and contents is None:
                 return no_update, "No image selected.", True, no_update
 
@@ -415,7 +415,7 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                     if len(contents) == 1:
                         if "csv" in contents[0]:
                             try:
-                                os.remove(f'assets/data.csv')
+                                os.remove(f'assets/input_file/file_search/data.csv')
                             except:
                                 pass
                             content_type, content_string = contents[0].split(',')
@@ -424,10 +424,10 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                             df.to_csv("assets/data.csv", index=False)
                             df = df.drop(df.columns[df.columns.str.contains('unnamed', case=False)], axis=1)
                             df = df.rename(columns={'Product_code': 'search_id'})
-                            df.drop(['ImageUrl', 'brand'], axis=1).to_csv(f"assets/input_file/{fe_request_id}.csv", index=False)
+                            df.drop(['ImageUrl', 'brand'], axis=1).to_csv(f"assets/input_file/file_search/{fe_request_id}.csv", index=False)
 
                             # print("search request", fe_request_id)
-                            return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
+                            return search_data(index, fe_request_id, api, helper, filename="assets/input_file/file_search/data.csv")
                         else:
                             return "", f"Select only a CSV file. Uploaded file : {filename}", True, {'display': 'None'}
                     else:
@@ -436,7 +436,7 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                     return "", "Select a CSV file, no file selected.", True, {'display': 'None'}
         elif radio_val == 'Catalog Search':
             client_data.loc[index, 'file_search'] = False
-            return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
+            return search_data(index, fe_request_id, api, helper, filename="assets/input_file/file_search/data.csv")
 
     elif triggered_id == "next":
         # print("next search id: ", client_data.loc[index]['search_request_id'])
@@ -523,9 +523,9 @@ for i in range(400):
             correct_val = correct_data.split("&&&")
             data = {'search_id': correct_val[0], 'product_id': correct_val[1], 'product_link': correct_val[2],
                     'img_url': correct_val[3], 'score': correct_val[4]}
-            df = pd.read_csv(f"assets/annotation/{sid}.csv")
+            df = pd.read_csv(f"assets/outputs/annotation/{sid}.csv")
             df = df.append(data, ignore_index=True)
-            df.to_csv(f"assets/annotation/{sid}.csv", index=False)
+            df.to_csv(f"assets/outputs/annotation/{sid}.csv", index=False)
             # print("correct")
             return True, False, False, True
 
@@ -533,9 +533,9 @@ for i in range(400):
             wrong_val = wrong_data.split("&&&")
             data = {'search_id': wrong_val[0], 'product_id': wrong_val[1], 'product_link': wrong_val[2],
                     'img_url': wrong_val[3], 'score': wrong_val[4], 'result': 'wrong'}
-            df = pd.read_csv(f"assets/annotation/{sid}.csv")
+            df = pd.read_csv(f"assets/outputs/annotation/{sid}.csv")
             df = df.append(data, ignore_index=True)
-            df.to_csv(f"assets/annotation/{sid}.csv", index=False)
+            df.to_csv(f"assets/outputs/annotation/{sid}.csv", index=False)
             # print("wrong")
             return False, True, True, False
         else:
@@ -558,19 +558,19 @@ def save_data(save, delete, index):
     # print('index: ', index)
     sid = client_data.loc[index]['search_request_id']
     if triggered_id == "save":
-        if os.path.exists(f"assets/annotation/{sid}.csv"):
-            df = pd.read_csv(f"assets/annotation/{sid}.csv")
+        if os.path.exists(f"assets/outputs/annotation/{sid}.csv"):
+            df = pd.read_csv(f"assets/outputs/annotation/{sid}.csv")
             if not df.empty:
                 try:
-                    df_mrp = pd.read_csv(f"assets/input_file/{sid}.csv")
+                    df_mrp = pd.read_csv(f"assets/input_file/file_search/{sid}.csv")
                     df = df.merge(df_mrp, on='search_id')
-                    with open(os.path.join('assets/annotation', f'{sid}.pkl'), 'wb') as f:
+                    with open(os.path.join('assets/outputs/annotation', f'{sid}.pkl'), 'wb') as f:
                         pickle.dump(df, f)
-                    alert_message = f"File Saved!!, internal file location: assets/annotation/{sid}.csv"
-                    df = df.drop(df.columns[df.columns.str.contains('unnamed', case=False)], axis=1)
+                    alert_message = f"File Saved!!, internal file location: assets/outputs/annotation/{sid}.csv"
+                    # df = df.drop(df.columns[df.columns.str.contains('unnamed', case=False)], axis=1)
                     data = dcc.send_data_frame(df.to_csv, "Matching Results.csv", index=False)
                 except Exception as e:
-                    alert_message = f'Error: {e}, recovery file location: assets/annotation/{sid}.csv'
+                    alert_message = f'Error: {e}, recovery file location: assets/outputs/annotation/{sid}.csv'
                     # alert_message = f'File saved!!'
                     data = dcc.send_data_frame(df.to_csv, "Matching Results.csv", index=False)
                 return alert_message, True, data
@@ -581,7 +581,7 @@ def save_data(save, delete, index):
 
     elif triggered_id == 'delete':
         # print("delete pressed")
-        filename = f"assets/annotation/{sid}.csv"
+        filename = f"assets/outputs/annotation/{sid}.csv"
         if os.path.exists(filename):
             df = pd.read_csv(filename)
             if not df.empty:
