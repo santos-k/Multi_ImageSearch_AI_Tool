@@ -19,7 +19,7 @@ def get_result2(api_url, filename, catalog):
     headers = {'enctype': 'multipart/form-data ; Content-Type:multipart/form-data'}
     starttime = datetime.now()
     try:
-        print("requesting...")
+        # print("requesting...")
         response = requests.request("POST", api_url, headers=headers, data=payload, files=files)
         # print("got response")
         if json.loads(response.text)['status'] == 'success':
@@ -28,12 +28,12 @@ def get_result2(api_url, filename, catalog):
 
             else:
                 result = json.loads(response.text)['catalog']
-            print(result)
+            # print(result)
             # with open("sample.json", "w") as outfile:
             #     json.dump(result, outfile)
         else:
             result = f"API Response Status: {json.loads(response.text)['status']}"
-        print("API Time: ", datetime.now()-start)
+        # print("API Time: ", datetime.now()-start)
 
     except requests.exceptions.ConnectionError as con:
         # print(con)

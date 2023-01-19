@@ -12,7 +12,7 @@ class DisplayImage:
         self.btn_count = 0
 
     def item_card(self, data, search_img_id):
-        print("inside item_card")
+        # print("inside item_card")
         # stime = datetime.now()
         # print(data)
         product_id = data['uuid']
@@ -34,7 +34,7 @@ class DisplayImage:
             dbc.CardBody([
                 html.A(f"{title[:20]}...", href=product_link, target="_blank"),
                 html.P(f"{brand}, {category[:15]}", className='m-0'),
-                html.P(f"Price: {price[:5]}, Score: {score}", className='m-0'),
+                html.P(f"Price: {price[:5]}, Match: {round(float(score)*100,1)}%", className='m-0'),
                 html.P(f"Source: {site}", className='m-0'),
 
                 dbc.Col([
@@ -66,7 +66,7 @@ class DisplayImage:
         return item
 
     def display_image(self, img_url, img_id, similar_result):
-        print("inside display_image")
+        # print("inside display_image")
         # stime = datetime.now()
         """
         Creates complete search result of a single input image and pack into row

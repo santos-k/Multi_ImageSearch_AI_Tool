@@ -8,12 +8,11 @@ import os
 import pandas as pd  # version 1.4.3
 import io
 import uuid
-import api
-import helper
+import api  # local file
+import helper  # local file
 import pickle
 import math
 import ast  # convert str of list to list
-# import pyautogui  # to press keyboard key
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -33,9 +32,9 @@ udaan_brand = pd.read_csv('assets/dropdown_df/dropdown_udaan_brand.csv')['option
 client_data = pd.read_csv("user_data.csv")
 
 
-def search_data(index,search_id, api, helper, filename="assets/data.csv"):
+def search_data(index, search_id, api, helper, filename="assets/data.csv"):
     global client_data
-    print(search_id)
+    # print(search_id)
     pd.DataFrame().to_csv(f"assets/annotation/{search_id}.csv")
     # print("File saved")
     cat = ""
@@ -54,31 +53,31 @@ def search_data(index,search_id, api, helper, filename="assets/data.csv"):
                   client_data.loc[index]['bijnis'], client_data.loc[index]['udaan'],
                   client_data.loc[index]['threshold'],
                   client_data.loc[index, 'search_request_id'], client_data.loc[index]['file_search'])
-    print("URL: ",url)
+    # print("URL: ", url)
     result = api.get_result(url, filename, client_data.loc[index]['catalog'])
     client_data.loc[index, 'result_list'] = str(result)
 
     if type(result) == list:
         children1 = []
         product = helper.DisplayImage()
-        for search in result[:client_data.loc[index]['no_of_search']]:  # search is a dict
+        for search in result[:int(client_data.loc[index]['no_of_search'])]:  # search is a dict
             img_url = search['ImageUrl']
             img_id = search['downloaded_image_path'].split("/")[-1]
             similar_result = search['similar']
             children1.append(product.display_image(img_url, img_id, similar_result))
 
-        if len(result) < client_data.loc[index]['no_of_search']:
+        if len(result) < int(client_data.loc[index]['no_of_search']):
             show_np = {'display': 'None'}
         else:
             show_np = {}
 
         client_data.loc[index, 'start'] = 0
-        client_data.loc[index, 'end'] = client_data.loc[index]['no_of_search']
+        client_data.loc[index, 'end'] = int(client_data.loc[index]['no_of_search'])
         client_data.loc[index, 'page'] = 1
         client_data.loc[index, 'total_page'] = math.ceil(
-            len(result) / client_data.loc[index]['no_of_search'])
+            len(result) / int(client_data.loc[index]['no_of_search']))
         client_data.loc[index, 'search_item'] = len(result)
-        message = f"Total Searched Items: {client_data.loc[index]['search_item']}, Page: {client_data.loc[index]['page']}/{client_data.loc[index]['total_page']}"
+        message = f"Total Searched Items: {int(client_data.loc[index]['search_item'])}, Page: {int(client_data.loc[index]['page'])}/{int(client_data.loc[index]['total_page'])}"
         dis_child = children1
         dis_child.insert(0, html.Div(html.H4(message), className="text-center"))
         #         print("Search time: ", datetime.now()-searcht)
@@ -93,6 +92,7 @@ app = dash.Dash(__name__, external_stylesheets=theme, suppress_callback_exceptio
                 meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1.0'}])
 server = app.server
 app.title = 'KonnectBox Product Recommender'
+app._favicon = "kb.png"
 app.layout = dbc.Container([
     # navbar
     dbc.NavbarSimple(fixed='top',
@@ -159,7 +159,7 @@ app.layout = dbc.Container([
                         dbc.Label("Sub-Database: "),
                     ], className="text-left", width=5),
                     dbc.Col([
-                        dcc.Checklist(options=['Ajio', 'Ajio_Business','Bijnis', 'Udaan'],
+                        dcc.Checklist(options=['Ajio', 'Ajio_Business', 'Bijnis', 'Udaan'],
                                       # value='Ajio',
                                       id="scraped_from",
                                       inline=True,
@@ -176,7 +176,7 @@ app.layout = dbc.Container([
         ], width=5),
         dbc.Col([
             dbc.Card([
-                dbc.Label('Threshold Value:', className="m-0"),
+                dbc.Label('Matching Threshold Value %:', className="m-0"),
                 dcc.Slider(0, 100, 1, value=80, marks=None, tooltip={"placement": "right", "always_visible": True},
                            id='threshold', className="m-0"),
                 dbc.Button('SEARCH',
@@ -199,7 +199,7 @@ app.layout = dbc.Container([
                         dcc.ConfirmDialog(id='file_save_alert'),
                     ], width='auto'),
                     dbc.Col([
-                        dbc.Button(children=[html.Img(src="assets/delete.svg",width="20px",height="20px")],
+                        dbc.Button(children=[html.Img(src="assets/delete.svg", width="20px", height="20px")],
                                    id='delete',
                                    n_clicks=0,
                                    color="danger",
@@ -267,7 +267,7 @@ def search_type(stype):
                                       'total_page': 0,
                                       'search_item': 0,
                                       'search_type': 'File Search'}, ignore_index=True)
-    client_data.to_csv("user_data.csv")
+    client_data.to_csv("user_data.csv", index=False)
     index = client_data[client_data['id'] == user_id].index[0]
     if stype == "Image Search":
         client_data.loc[index, 'search_type'] = 'Image Search'
@@ -319,7 +319,7 @@ def update(db, val, index):
             client_data.loc[index, 'ajio_business'] = 1
             client_data.loc[index, 'bijnis'] = 0
             client_data.loc[index, 'udaan'] = 0
-            return helper.dropdown(ajio_category, ajio_brand), {} # need to change cat and brand
+            return helper.dropdown(ajio_category, ajio_brand), {}  # need to change cat and brand
         elif val is not None and len(val) == 1 and val[0] == 'Bijnis':
             client_data.loc[index, 'ajio'] = 0
             client_data.loc[index, 'ajio_business'] = 0
@@ -335,7 +335,7 @@ def update(db, val, index):
         elif val is not None and len(val) > 1:
             client_data.loc[index, 'category'] = str(None)
             client_data.loc[index, 'brand'] = str(None)
-            opt = ['Ajio','Ajio_Business', 'Bijnis', 'Udaan']
+            opt = ['Ajio', 'Ajio_Business', 'Bijnis', 'Udaan']
             for j in val:
                 if j in opt:
                     client_data.loc[index, j.lower()] = 1
@@ -403,9 +403,9 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                     with open(os.path.join(f'assets/image/{fe_request_id}', f'{name}'), 'wb') as fp:
                         fp.write(base64.b64decode((image.split('base64,')[1])))
                         fp.close()
-                return search_data(index,fe_request_id, api, helper, filename="assets/data.csv")
+                return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
             elif search_click > 0 and contents is None:
-                return no_update, no_update, "No image selected.", True, no_update
+                return no_update, "No image selected.", True, no_update
 
         # file search
         elif radio_val == "File Search":
@@ -424,10 +424,10 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                             df.to_csv("assets/data.csv", index=False)
                             df = df.drop(df.columns[df.columns.str.contains('unnamed', case=False)], axis=1)
                             df = df.rename(columns={'Product_code': 'search_id'})
-                            df.drop(['ImageUrl', 'brand'], axis=1).to_csv(f"assets/input_file/{fe_request_id}.csv")
+                            df.drop(['ImageUrl', 'brand'], axis=1).to_csv(f"assets/input_file/{fe_request_id}.csv", index=False)
 
                             # print("search request", fe_request_id)
-                            return search_data(index,fe_request_id, api, helper, filename="assets/data.csv")
+                            return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
                         else:
                             return "", f"Select only a CSV file. Uploaded file : {filename}", True, {'display': 'None'}
                     else:
@@ -436,7 +436,7 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                     return "", "Select a CSV file, no file selected.", True, {'display': 'None'}
         elif radio_val == 'Catalog Search':
             client_data.loc[index, 'file_search'] = False
-            return search_data(index,fe_request_id, api, helper, filename="assets/data.csv")
+            return search_data(index, fe_request_id, api, helper, filename="assets/data.csv")
 
     elif triggered_id == "next":
         # print("next search id: ", client_data.loc[index]['search_request_id'])
@@ -449,19 +449,19 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                 children1 = []
                 product = helper.DisplayImage()
                 for search in ast.literal_eval(client_data.loc[index]['result_list'])[
-                              client_data.loc[index]['start']:client_data.loc[index]['end']]:  # search is a dict
+                              int(client_data.loc[index]['start']):int(client_data.loc[index]['end'])]:  # search is a dict
                     img_url = search['ImageUrl']
                     img_id = search['downloaded_image_path'].split("/")[-1]
                     similar_result = search['similar']
                     children1.append(product.display_image(img_url, img_id, similar_result))
-                message = f"Total Searched Items: {client_data.loc[index]['search_item']}, Page: {client_data.loc[index]['page']}/{client_data.loc[index]['total_page']}"
+                message = f"Total Searched Items: {int(client_data.loc[index]['search_item'])}, Page: {int(client_data.loc[index]['page'])}/{int(client_data.loc[index]['total_page'])}"
                 dis_child = children1
                 dis_child.insert(0, html.Div(html.H4(message), className="text-center"))
-                return  dis_child, no_update, no_update, {}
+                return dis_child, no_update, no_update, {}
             else:
-                return  no_update, no_update, no_update, {}
+                return no_update, no_update, no_update, {}
         except Exception as e:
-            return  no_update, e, True, {}
+            return no_update, e, True, {}
 
     elif triggered_id == "prev":
         try:
@@ -473,22 +473,22 @@ def update(search_click, clear_click, prev_btn, next_btn, contents, filename, in
                 children1 = []
                 product = helper.DisplayImage()
                 for search in ast.literal_eval(client_data.loc[index]['result_list'])[
-                              client_data.loc[index]['start']:client_data.loc[index]['end']]:  # search is a dict
+                              int(client_data.loc[index]['start']):int(client_data.loc[index]['end'])]:  # search is a dict
                     img_url = search['ImageUrl']
                     img_id = search['downloaded_image_path'].split("/")[-1]
                     similar_result = search['similar']
                     children1.append(product.display_image(img_url, img_id, similar_result))
 
-                message = f"Total Searched Items: {client_data.loc[index]['search_item']}, Page: {client_data.loc[index]['page']}/{client_data.loc[index]['total_page']}"
+                message = f"Total Searched Items: {int(client_data.loc[index]['search_item'])}, Page: {int(client_data.loc[index]['page'])}/{int(client_data.loc[index]['total_page'])}"
                 dis_child = children1
                 dis_child.insert(0, html.Div(html.H4(message), className="text-center"))
                 etime = datetime.now()
                 # print("Prev load time: ", etime - stime)
-                return  dis_child, no_update, no_update, {}
+                return dis_child, no_update, no_update, {}
             else:
-                return  no_update, no_update, no_update, {}
+                return no_update, no_update, no_update, {}
         except Exception as e:
-            return  no_update, e, True, {}
+            return no_update, e, True, {}
 
     elif triggered_id == "clear":
         client_data.loc[index, 'start'] = 0
@@ -512,33 +512,35 @@ for i in range(400):
         Input(f'correct{i}', 'key'),
         Input(f'wrong{i}', 'key'),
         State("store", "data"),
+        prevent_initial_call=True
     )
     def update(correct_click, wrong_click, correct_data, wrong_data, index):
+        triggered_id = ctx.triggered_id
+        # print(triggered_id)
         global client_data
         sid = client_data.loc[index]['search_request_id']
-        if correct_click > 0:
+        if "correct" in triggered_id:
             correct_val = correct_data.split("&&&")
             data = {'search_id': correct_val[0], 'product_id': correct_val[1], 'product_link': correct_val[2],
                     'img_url': correct_val[3], 'score': correct_val[4]}
-            # data = {'search_id': correct_val[0], 'product_id': correct_val[1], 'product_link': correct_val[2],
-            #         'img_url': correct_val[3], 'score': correct_val[4], 'result': 'correct'}
             df = pd.read_csv(f"assets/annotation/{sid}.csv")
             df = df.append(data, ignore_index=True)
             df.to_csv(f"assets/annotation/{sid}.csv", index=False)
-            # print("correct click saved", index)
-            # print("next search id: ", client_data.loc[index]['search_request_id'])
-            return True, False, True, True
+            # print("correct")
+            return True, False, False, True
 
-        elif wrong_click > 0:
+        elif "wrong" in triggered_id:
             wrong_val = wrong_data.split("&&&")
             data = {'search_id': wrong_val[0], 'product_id': wrong_val[1], 'product_link': wrong_val[2],
                     'img_url': wrong_val[3], 'score': wrong_val[4], 'result': 'wrong'}
             df = pd.read_csv(f"assets/annotation/{sid}.csv")
             df = df.append(data, ignore_index=True)
             df.to_csv(f"assets/annotation/{sid}.csv", index=False)
-            return True, True, True, False
+            # print("wrong")
+            return False, True, True, False
         else:
-            return False, True, True, True
+            # print("initial")
+            return False, True, False, True
 
 
 # pkl and df save alert
@@ -585,7 +587,7 @@ def save_data(save, delete, index):
             if not df.empty:
                 # df = pd.read_csv(f"assets/outputs/output{index}.csv")
                 df = df.iloc[:-1]
-                df.to_csv(filename)
+                df.to_csv(filename, index=False)
                 return "Last record deleted", True, no_update
             return "No records to delete", True, no_update
         else:
@@ -593,6 +595,6 @@ def save_data(save, delete, index):
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8083)
-    # app.run_server(host='0.0.0.0', port=8083,debug=True)
+    app.run_server(host='0.0.0.0', port=8085)
+    # app.run_server(host='0.0.0.0', port=8085,debug=True)
     # app.run_server(debug=False)
